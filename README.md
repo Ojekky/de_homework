@@ -26,9 +26,11 @@ We'll use the green taxi trips from October 2019:
 wget https://github.com/DataTalksClub/nyc-tlc-data/releases/download/green/green_tripdata_2019-10.csv.gz
 ```
 
-**Ans**
+**Answer**
 I used the code from the course and used Jupyter notebook.
 I firstly ran the pgcli 
+
+```bash
   pgcli -h localhost -p 5432 -u root -d ny_taxi
 Password for root:
 Server: PostgreSQL 13.18 (Debian 13.18-1.pgdg120+1)
@@ -43,7 +45,7 @@ root@localhost:ny_taxi> \dt
 +--------+-------------------+-------+-------+
 SELECT 2
 Time: 0.264s
-
+```
 
 ```bash
 wget https://github.com/DataTalksClub/nyc-tlc-data/releases/download/misc/taxi_zone_lookup.csv
