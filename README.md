@@ -8,13 +8,19 @@ $ python --version
 Python 3.12.8
 
 What's the version of `pip` in the image?
+
+**Answer**
 pip                       24.3.1
+
+
 
 ## Question 2. Understanding Docker networking and docker-compose
 
 Given the following `docker-compose.yaml`, what is the `hostname` and `port` that **pgadmin** should use to connect to the postgres database?
 
+**Answer**
 The host name is postgres as seen in the image: postgres:17-alpine on the db. Also, the host port is 5433.
+
 
 
 ##  Prepare Postgres
@@ -28,7 +34,7 @@ wget https://github.com/DataTalksClub/nyc-tlc-data/releases/download/green/green
 
 **Answer**
 I used the code from the course and used Jupyter notebook.
-I firstly ran the pgcli 
+I first ran the pgcli 
 
 ```bash
   pgcli -h localhost -p 5432 -u root -d ny_taxi
