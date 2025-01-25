@@ -46,7 +46,36 @@ root@localhost:ny_taxi> \dt
 SELECT 2
 Time: 0.264s
 ```
+Also downloaded the table using wget
+```bash
+wget https://github.com/DataTalksClub/nyc-tlc-data/releases/download/green/green_tripdata_2019-10.csv.gz
+```
+Then entered notebook on bash $ jupyter notebook
+```jupyter
+import pandas as pd
+df_green = pd.read_csv('green_tripdata_2019-10.csv', nrows=100) -- confirmed i could read the row.
+print(pd.io.sql.get_schema(df_green, name='green_taxi_data')) --confirmed the datetime to be text also.
+from sqlalchemy import create_engine
+engine = create_engine('postgresql://root:root@localhost:5432/ny_taxi')
+from time import time
+df_doper = pd.read_csv('green_tripdata_2019-10.csv', iterator=True, chunksize=50000) --did 50000 because i could
+while True: 
+    t_start = time()
 
+    df_green = next(df_doper)
+
+    df_green.lpep_pickup_datetime = pd.to_datetime(df_green.lpep_pickup_datetime)
+    df_green.lpep_dropoff_datetime = pd.to_datetime(df_green.lpep_dropoff_datetime)
+    
+    df_green.to_sql(name='green_taxi_data', con=engine, if_exists='append')
+
+    t_end = time()
+
+    print('inserted another chunk, took %.3f second' % (t_end - t_start))
+```
+Opened my pgadmin and refreshed my schemas and the green_tripdata_2019-10.csv.gz is loaded as the green_taxi_data on pgadmin.
+
+--------------------------------------------------------------------------------------------
 ```bash
 wget https://github.com/DataTalksClub/nyc-tlc-data/releases/download/misc/taxi_zone_lookup.csv
 ```
@@ -55,6 +84,11 @@ Download this data and put it into Postgres.
 
 You can use the code from the course. It's up to you whether
 you want to use Jupyter or a python script.
+
+**Answer**
+This was already a part of my pgadmin database as followed during the course.
+
+
 
 
 
