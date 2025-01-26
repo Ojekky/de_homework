@@ -46,6 +46,9 @@ root@localhost:ny_taxi> \dt
 +--------+-------------------+-------+-------+
 | Schema | Name              | Type  | Owner |
 |--------+-------------------+-------+-------|
+| public | green_taxi_data   | table | root  |
+| public | green_taxi_drive  | table | root  |
+| public | green_taxi_trips  | table | root  |
 | public | yellow_taxi_trips | table | root  |
 | public | zones             | table | root  |
 +--------+-------------------+-------+-------+
@@ -59,21 +62,21 @@ wget https://github.com/DataTalksClub/nyc-tlc-data/releases/download/green/green
 Then entered notebook on bash $ jupyter notebook
 ```jupyter
 import pandas as pd
-df_green = pd.read_csv('green_tripdata_2019-10.csv', nrows=100) -- confirmed i could read the row.
-print(pd.io.sql.get_schema(df_green, name='green_taxi_data')) --confirmed the datetime to be text also.
+df_greene = pd.read_csv('green_tripdata_2019-10.csv')
+len(df_greene)
 from sqlalchemy import create_engine
 engine = create_engine('postgresql://root:root@localhost:5432/ny_taxi')
 from time import time
-df_doper = pd.read_csv('green_tripdata_2019-10.csv', iterator=True, chunksize=50000) --did 50000 because i could
+df_dop = pd.read_csv('green_tripdata_2019-10.csv', iterator=True, chunksize=100000)
 while True: 
     t_start = time()
 
-    df_green = next(df_doper)
+    df_greene = next(df_dop)
 
-    df_green.lpep_pickup_datetime = pd.to_datetime(df_green.lpep_pickup_datetime)
-    df_green.lpep_dropoff_datetime = pd.to_datetime(df_green.lpep_dropoff_datetime)
+    df_greene.lpep_pickup_datetime = pd.to_datetime(df_greene.lpep_pickup_datetime)
+    df_greene.lpep_dropoff_datetime = pd.to_datetime(df_greene.lpep_dropoff_datetime)
     
-    df_green.to_sql(name='green_taxi_data', con=engine, if_exists='append')
+    df_greene.to_sql(name='green_taxi_drive', con=engine, if_exists='append')
 
     t_end = time()
 
@@ -105,9 +108,51 @@ During the period of October 1st 2019 (inclusive) and November 1st 2019 (exclusi
 5. Over 10 miles
 
 **Answer**
-----
-
-
+```SQL
+1. SELECT
+     COUNT(lpep_pickup_datetime) AS trip_count
+ FROM
+     green_taxi_drive
+ WHERE
+     lpep_pickup_datetime >= '2019-10-01' AND
+     lpep_dropoff_datetime < '2019-11-01' AND trip_distance <= 1;
+2. SELECT
+     COUNT(lpep_pickup_datetime) AS trip_count
+ FROM
+     green_taxi_drive
+ WHERE
+     lpep_pickup_datetime >= '2019-10-01' 
+	 AND lpep_dropoff_datetime < '2019-11-01' 
+	 AND trip_distance > 1
+	 AND trip_distance <= 3;
+3. SELECT
+     COUNT(lpep_pickup_datetime) AS trip_count
+ FROM
+     green_taxi_drive
+ WHERE
+     lpep_pickup_datetime >= '2019-10-01' 
+	 AND lpep_dropoff_datetime < '2019-11-01' 
+	 AND trip_distance > 3
+	 AND trip_distance <= 7;
+4. SELECT
+     COUNT(lpep_pickup_datetime) AS trip_count
+ FROM
+     green_taxi_drive
+ WHERE
+     lpep_pickup_datetime >= '2019-10-01' 
+	 AND lpep_dropoff_datetime < '2019-11-01' 
+	 AND trip_distance > 7
+	 AND trip_distance <= 10;
+5.SELECT
+     COUNT(lpep_pickup_datetime) AS trip_count
+ FROM
+     green_taxi_drive
+ WHERE
+     lpep_pickup_datetime >= '2019-10-01' 
+	 AND lpep_dropoff_datetime < '2019-11-01' 
+	 AND trip_distance > 10;
+```
+-----------
 ## Question 4. Longest trip for each day
 
 Which was the pick up day with the longest trip distance?
