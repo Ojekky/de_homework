@@ -181,6 +181,53 @@ Which were the top pickup locations with over 13,000 in
 `total_amount` (across all trips) for 2019-10-18?
 
 Consider only `lpep_pickup_datetime` when filtering by date.
+```SQL
+SELECT
+	CONCAT(zpu."Zone") AS "pickup_loc",
+	SUM(t.total_amount) AS total_amount
+FROM
+	green_taxi_drive t LEFT JOIN zones zpu
+		ON t."PULocationID" = zpu."LocationID"
+	LEFT JOIN zones zdo
+		ON t."DOLocationID" = zdo."LocationID"
+WHERE
+	DATE(lpep_pickup_datetime) = '2019-10-18'
+GROUP BY
+	CONCAT(zpu."Zone")
+ORDER BY
+	total_amount DESC;
+```
+## Question 6. Largest tip
+
+For the passengers picked up in October 2019 in the zone
+named "East Harlem North" which was the drop off zone that had
+the largest tip?
+
+Note: it's `tip` , not `trip`
+
+We need the name of the zone, not the ID.
+```SQL
+SELECT
+	CONCAT(zdo."Zone") AS "dropoff_loc",
+	MAX(t.tip_amount) AS total_tip
+FROM
+	green_taxi_drive t LEFT JOIN zones zpu
+		ON t."PULocationID" = zpu."LocationID"
+	LEFT JOIN zones zdo
+		ON t."DOLocationID" = zdo."LocationID"
+WHERE
+	DATE(lpep_pickup_datetime) >= '2019-10-01'
+	AND DATE(lpep_pickup_datetime) < '2019-11-01'
+	AND CONCAT(zpu."Zone") = 'East Harlem North'
+GROUP BY
+    CONCAT(zdo."Zone")
+ORDER BY
+	total_tip DESC;
+```
+
+
+
+
 
 
 
