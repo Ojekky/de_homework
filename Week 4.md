@@ -160,6 +160,7 @@ on trips_unioned.dropoff_locationid = dropoff_zone.locationid
 
 Considering the YoY Growth in 2020, which were the yearly quarters with the best (or less worse) and worst results for green, and yellow
 
+Here is the `fct_taxi_trips_quarterly_revenue.sql`
 ```sql
 {{
     config(
