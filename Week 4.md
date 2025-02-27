@@ -206,6 +206,93 @@ SELECT * FROM quarterly_revenue_growth
 Answer is - green: {best: 2020/Q2, worst: 2020/Q1}, yellow: {best: 2020/Q2, worst: 2020/Q1}
 
 
+### Question 6: P97/P95/P90 Taxi Monthly Fare
+
+1. Create a new model `fct_taxi_trips_monthly_fare_p95.sql`
+2. Filter out invalid entries (`fare_amount > 0`, `trip_distance > 0`, and `payment_type_description in ('Cash', 'Credit Card')`)
+3. Compute the **continous percentile** of `fare_amount` partitioning by service_type, year and and month
+
+Now, what are the values of `p97`, `p95`, `p90` for Green Taxi and Yellow Taxi, in April 2020?
+
+```sql
+-- Using the below as `fct_taxi_trips_monthly_fare_p95.sql`
+
+{{
+    config(
+        materialized='table'
+    )
+}}
+
+WITH filtered_data AS (
+    SELECT
+        service_type,
+        fare_amount
+    FROM {{ ref('fct_taxi_trips') }}
+    WHERE
+        fare_amount > 0
+        AND trip_distance > 0
+        AND payment_type_description IN ('Cash', 'Credit Card')
+        AND year_p = 2020
+        AND month_p = 4
+),
+percentiles AS (
+    SELECT
+        service_type,
+        PERCENTILE_CONT(fare_amount, 0.97) OVER (PARTITION BY service_type) AS p97_fare_amount,
+        PERCENTILE_CONT(fare_amount, 0.95) OVER (PARTITION BY service_type) AS p95_fare_amount,
+        PERCENTILE_CONT(fare_amount, 0.90) OVER (PARTITION BY service_type) AS p90_fare_amount
+    FROM filtered_data
+)
+SELECT
+    *
+FROM
+    percentiles
+GROUP BY
+    service_type, p97_fare_amount, p95_fare_amount, p90_fare_amount
+ORDER BY
+    service_type
+```
+
+- green: {p97: 40.0, p95: 33.0, p90: 24.5}, yellow: {p97: 31.5, p95: 25.5, p90: 19.0}
+
+### Question 7: Top #Nth longest P90 travel time Location for FHV
+
+Prerequisites:
+* Create a staging model for FHV Data (2019), and **DO NOT** add a deduplication step, just filter out the entries where `where dispatching_base_num is not null`
+* Create a core model for FHV Data (`dim_fhv_trips.sql`) joining with `dim_zones`. Similar to what has been done [here](../../../04-analytics-engineering/taxi_rides_ny/models/core/fact_trips.sql)
+* Add some new dimensions `year` (e.g.: 2019) and `month` (e.g.: 1, 2, ..., 12), based on `pickup_datetime`, to the core model to facilitate filtering for your queries
+
+Now...
+1. Create a new model `fct_fhv_monthly_zone_traveltime_p90.sql`
+2. For each record in `dim_fhv_trips.sql`, compute the [timestamp_diff](https://cloud.google.com/bigquery/docs/reference/standard-sql/timestamp_functions#timestamp_diff) in seconds between dropoff_datetime and pickup_datetime - we'll call it `trip_duration` for this exercise
+3. Compute the **continous** `p90` of `trip_duration` partitioning by year, month, pickup_location_id, and dropoff_location_id
+
+For the Trips that **respectively** started from `Newark Airport`, `SoHo`, and `Yorkville East`, in November 2019, what are **dropoff_zones** with the 2nd longest p90 trip_duration ?
+After creating a partition using years
+```sql
+SELECT
+    year,
+    month,
+    pickup_locationid,
+    dropoff_locationid,
+    pickup_zone,
+    dropoff_zone,
+    APPROX_QUANTILES(trip_duration, 100)[OFFSET(90)] AS trip_duration_p90
+FROM
+    `global-rookery-448215-m8.dbt_oojekunbi.dim_fhv_trips_partitioned_clustered`
+WHERE month = 11
+  AND year = 2019
+  AND pickup_zone in ('Newark Airport', 'Yorkville East', 'SoHo')
+GROUP BY
+    year,
+    month,
+    pickup_locationid,
+    dropoff_locationid,
+    pickup_zone,
+    dropoff_zone
+```
+Answer - LaGuardia Airport, Greenwich Village South, Garment District
+
 
 
 
