@@ -252,6 +252,12 @@ GROUP BY
 ORDER BY
     service_type
 ```
+Amswer:
+Row	               Green          Yellow
+service_type       28.0           32.0
+p97_fare_amount    23.0           26.0   
+p95_fare_amount    18.0           19.5
+p90_fare_amount
 
 - green: {p97: 40.0, p95: 33.0, p90: 24.5}, yellow: {p97: 31.5, p95: 25.5, p90: 19.0}
 
@@ -266,6 +272,8 @@ Now...
 1. Create a new model `fct_fhv_monthly_zone_traveltime_p90.sql`
 2. For each record in `dim_fhv_trips.sql`, compute the [timestamp_diff](https://cloud.google.com/bigquery/docs/reference/standard-sql/timestamp_functions#timestamp_diff) in seconds between dropoff_datetime and pickup_datetime - we'll call it `trip_duration` for this exercise
 3. Compute the **continous** `p90` of `trip_duration` partitioning by year, month, pickup_location_id, and dropoff_location_id
+
+Answer, a table was created using year as the partition and month, pickup_location_id, and dropoff_location_id as clusters
 
 For the Trips that **respectively** started from `Newark Airport`, `SoHo`, and `Yorkville East`, in November 2019, what are **dropoff_zones** with the 2nd longest p90 trip_duration ?
 After creating a partition using years
