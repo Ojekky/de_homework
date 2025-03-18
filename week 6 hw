@@ -1,0 +1,57 @@
+Question 1
+
+```bash
+docker exec redpanda-1 rpk --version
+rpk version v24.2.18 (rev f9a22d4430)
+```
+
+Question 2
+
+```bash
+docker exec redpanda-1 rpk topic create green-trips
+TOPIC        STATUS
+green-trips  OK
+```
+
+Question 3
+True
+
+Question 4
+```py
+import pandas as pd
+from kafka import KafkaProducer  # Assuming you're using kafka-python
+import json
+from time import time
+
+df_filtered = pd.read_csv("green_tripdata_2019-10.csv")
+columns_to_keep = [
+    'lpep_pickup_datetime',
+    'lpep_dropoff_datetime',
+    'PULocationID',
+    'DOLocationID',
+    'passenger_count',
+    'trip_distance',
+    'tip_amount'
+]
+df_filtered = df_filtered[columns_to_keep]
+
+producer = KafkaProducer(bootstrap_servers='localhost:9092')  # Adjust as needed
+topic_name = 'green-trips1'
+
+t0 = time()
+
+for index, row in df_filtered.iterrows():
+    message = row.to_dict()  # Convert row to dictionary
+    serialized_message = json.dumps(message).encode('utf-8')  # Serialize to JSON
+
+    producer.send(topic_name, value=serialized_message)
+    print(f"Sent: {message}")
+
+producer.flush()
+
+t1 = time()
+took = t1 - t0
+print(f"Time taken: {took} seconds")
+```
+Time taken: 154.36993169784546 seconds
+

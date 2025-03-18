@@ -1,6 +1,0 @@
-Question 1
-
-```bash
-docker exec redpanda-1 rpk --version
-rpk version v24.2.18 (rev f9a22d4430)
-```
